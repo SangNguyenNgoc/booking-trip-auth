@@ -5,6 +5,7 @@ services:
       TAG: AUTH
     build: ./auth-server
     container_name: auth-server
+    network_mode: "host"
     restart: on-failure
     ports:
       - "9000:9000"
