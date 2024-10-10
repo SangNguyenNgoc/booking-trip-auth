@@ -1,0 +1,12 @@
+version: "1"
+services:
+  auth-server:
+    environment:
+      TAG: AUTH
+    build: ./auth-server
+    container_name: auth-server
+    restart: on-failure
+    ports:
+      - "9000:9000"
+    env_file:
+      - .env
