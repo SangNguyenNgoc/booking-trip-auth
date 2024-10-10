@@ -1,0 +1,75 @@
+server:
+  port: 9000
+spring:
+  security:
+    oauth2:
+      authorizationserver:
+        issuer: ${AUTH_URL}
+  datasource:
+    driverClassName: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/auth
+    username: ${MYSQL_USER}
+    password: ${MYSQL_PASS}
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: false
+        dialect: org.hibernate.dialect.MySQL8Dialect
+  application:
+    name: auth-server
+  kafka:
+    bootstrap-servers: ${BOOTSTRAP1}
+    producer:
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: -1
+      retries: 1
+      properties:
+        enable:
+          idempotence: true
+        max:
+          in:
+            flight:
+              request:
+                per:
+                  connection: 5
+    consumer:
+      value-deserializer: org.apache.kafka.common.serialization.ByteArrayDeserializer
+      auto-offset-reset: earliest
+client:
+  client-id: web-client
+  redirect-uris:
+    - ${SSL}://${DOMAIN}/authorized
+    - https://oauth.pstmn.io/v1/callback
+    - http://${SWAGGER_DOMAIN}/swagger-ui/oauth2-redirect.html
+  settings:
+    require-authorization-consent: false
+    require-proof-key: true
+token:
+  key-size: 2048
+  access-token-time-to-live: 7
+
+management:
+  tracing:
+    sampling:
+      probability: 1
+  zipkin:
+    tracing:
+      endpoint: ${BASE_URL}/api/v2/spans
+  endpoints:
+    web:
+      exposure:
+        include: info, health
+
+eureka:
+  instance:
+    hostname: ${EUREKA_HOST}
+  client:
+    service-url:
+      defaultZone: ${EUREKA_DEFAULT_ZONE}
