@@ -3,7 +3,7 @@ services:
   auth-server:
     environment:
       TAG: AUTH
-    build: ./auth-server
+    build: .
     container_name: auth-server
     network_mode: "host"
     restart: on-failure
