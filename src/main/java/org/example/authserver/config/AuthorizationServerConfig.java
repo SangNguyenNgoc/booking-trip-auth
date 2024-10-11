@@ -174,7 +174,6 @@ public class AuthorizationServerConfig {
                 context.getClaims().claims((claims) -> {
                     Set<String> roles = AuthorityUtils.authorityListToSet(context.getPrincipal().getAuthorities());
                     claims.put("scope", roles);
-                    claims.put("iss", iss);
                 });
             }
         };

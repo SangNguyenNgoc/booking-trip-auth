@@ -1,5 +1,7 @@
 server:
   port: 9000
+  forward-headers-strategy: native
+
 spring:
   security:
     oauth2:
