@@ -75,3 +75,6 @@ eureka:
   client:
     service-url:
       defaultZone: ${EUREKA_DEFAULT_ZONE}
+
+url:
+  base-url: ${SSL}://${DOMAIN}/api/v1

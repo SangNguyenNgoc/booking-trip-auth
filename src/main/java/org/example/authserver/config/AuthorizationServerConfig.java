@@ -5,6 +5,7 @@ import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import lombok.RequiredArgsConstructor;
+import org.example.authserver.filters.MyCorsFilter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.bind.Bindable;
 import org.springframework.boot.context.properties.bind.Binder;
@@ -40,6 +41,7 @@ import org.springframework.security.oauth2.server.authorization.token.JwtEncodin
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.channel.ChannelProcessingFilter;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
 
@@ -74,6 +76,8 @@ public class AuthorizationServerConfig {
     @Value("${spring.security.oauth2.authorizationserver.issuer}")
     private String iss;
 
+    private final MyCorsFilter myCorsFilter;
+
     @Bean
     public RegisteredClientRepository registeredClientRepository(){
         List<String> redirectUris = Binder.get(environment)
@@ -97,17 +101,6 @@ public class AuthorizationServerConfig {
         return new InMemoryRegisteredClientRepository(registeredClient);
 
     }
-//    @Bean
-//    public UserDetailsService userDetailsService(){
-//        String role = "USER";
-//        String password = "password";
-//        String name = "user";
-//        UserDetails userDetails = User.builder()
-//                .username(name).roles(role)
-//                .password(passwordEncoder().encode(password))
-//                .build();
-//        return new InMemoryUserDetailsManager(userDetails);
-//    }
 
     @Bean
     public JWKSource<SecurityContext> jwkSource() throws NoSuchAlgorithmException {
@@ -156,11 +149,13 @@ public class AuthorizationServerConfig {
     @Order(2)
     public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
         http.formLogin(Customizer.withDefaults());
-        http.authorizeHttpRequests(a -> a.anyRequest().authenticated());
+        http.authorizeHttpRequests(auth -> auth
+                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
+                .anyRequest().authenticated()
+        );
+        http.addFilterBefore(myCorsFilter, ChannelProcessingFilter.class);
         return http.build();
     }
-
-
 
     @Bean
     public PasswordEncoder passwordEncoder() {
