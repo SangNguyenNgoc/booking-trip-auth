@@ -154,7 +154,6 @@ public class AuthorizationServerConfig {
                 .anyRequest().authenticated()
         );
         http.addFilterBefore(myCorsFilter, ChannelProcessingFilter.class);
-
         return http.build();
     }
 
