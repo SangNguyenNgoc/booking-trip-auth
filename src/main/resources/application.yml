@@ -78,3 +78,11 @@ eureka:
 
 url:
   base-url: ${SSL}://${DOMAIN}/api/v1
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    oauth:
+      client-id: ${client.client-id}
+      use-pkce-with-authorization-code-grant: true
+    oauth2-redirect-url: ${SWAGGER_DOMAIN}/swagger-ui/oauth2-redirect.html
