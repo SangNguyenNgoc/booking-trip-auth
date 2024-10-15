@@ -1,4 +1,4 @@
-package org.example.authserver.service;
+package org.example.authserver.services;
 
 import lombok.RequiredArgsConstructor;
 import org.example.authserver.entities.User;

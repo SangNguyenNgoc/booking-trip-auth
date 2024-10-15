@@ -1,18 +1,15 @@
-package org.example.authserver.service;
+package org.example.authserver.services;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.example.authserver.dto.AccountCreateRequest;
+import org.example.authserver.dtos.AccountCreateRequest;
 import org.example.authserver.interfaces.RoleRepository;
 import org.example.authserver.interfaces.UserMapper;
 import org.example.authserver.interfaces.UserRepository;
-import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.logging.Logger;
 
 public interface UserService {
     void createAccount(AccountCreateRequest accountCreateRequest);

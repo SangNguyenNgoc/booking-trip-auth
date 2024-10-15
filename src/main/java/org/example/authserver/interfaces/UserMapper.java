@@ -1,6 +1,6 @@
 package org.example.authserver.interfaces;
 
-import org.example.authserver.dto.AccountCreateRequest;
+import org.example.authserver.dtos.AccountCreateRequest;
 import org.example.authserver.entities.User;
 import org.mapstruct.*;
 
