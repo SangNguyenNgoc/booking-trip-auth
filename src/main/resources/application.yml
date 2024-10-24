@@ -44,12 +44,21 @@ spring:
     consumer:
       value-deserializer: org.apache.kafka.common.serialization.ByteArrayDeserializer
       auto-offset-reset: earliest
+  redis:
+    host: ${REDIS_HOST}
+    port: ${REDIS_PORT}
+    sentinel:
+      username: ${REDIS_USERNAME}
+      password: ${REDIS_PASSWORD}
 client:
-  client-id: web-client
+  client-id:
+    - web-client
+    - admin-client
   redirect-uris:
     - ${SSL}://${DOMAIN}/authorized
     - https://oauth.pstmn.io/v1/callback
     - http://${SWAGGER_DOMAIN}/swagger-ui/oauth2-redirect.html
+    - http:localhost:3000/logout
   settings:
     require-authorization-consent: false
     require-proof-key: true
@@ -57,17 +66,17 @@ token:
   key-size: 2048
   access-token-time-to-live: 7
 
-management:
-  tracing:
-    sampling:
-      probability: 1
-  zipkin:
-    tracing:
-      endpoint: ${BASE_URL}/api/v2/spans
-  endpoints:
-    web:
-      exposure:
-        include: info, health
+#management:
+#  tracing:
+#    sampling:
+#      probability: 1
+#  zipkin:
+#    tracing:
+#      endpoint: ${BASE_URL}/api/v2/spans
+#  endpoints:
+#    web:
+#      exposure:
+#        include: info, health
 
 eureka:
   instance:

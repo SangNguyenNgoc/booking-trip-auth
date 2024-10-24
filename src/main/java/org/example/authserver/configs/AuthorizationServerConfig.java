@@ -4,8 +4,10 @@ import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.example.authserver.filters.MyCorsFilter;
+import org.example.authserver.services.TokenService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.bind.Bindable;
 import org.springframework.boot.context.properties.bind.Binder;
@@ -13,7 +15,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -36,19 +37,21 @@ import org.springframework.security.oauth2.server.authorization.settings.ClientS
 import org.springframework.security.oauth2.server.authorization.settings.TokenSettings;
 import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.channel.ChannelProcessingFilter;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import java.io.IOException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -58,9 +61,10 @@ import java.util.UUID;
 public class AuthorizationServerConfig {
 
     private final Environment environment;
-
-    @Value("${client.client-id:default}")
-    private String clientId;
+    private final MyCorsFilter myCorsFilter;
+    private final TokenService tokenService;
+    //    @Value("${client.client-id:default}")
+//    private String clientId;
     @Value("${client.settings.require-authorization-consent}")
     private Boolean requireAuthorizationConsent;
     @Value("${client.settings.require-proof-key}")
@@ -69,33 +73,41 @@ public class AuthorizationServerConfig {
     private Integer accessTokenTimeToLive;
     @Value("${token.key-size}")
     private Integer keySize;
-
     @Value("${spring.security.oauth2.authorizationserver.issuer}")
     private String iss;
 
-    private final MyCorsFilter myCorsFilter;
-
     @Bean
-    public RegisteredClientRepository registeredClientRepository(){
+    public RegisteredClientRepository registeredClientRepository() {
         List<String> redirectUris = Binder.get(environment)
                 .bind("client.redirect-uris", Bindable.listOf(String.class))
                 .get();
+        List<String> clientIds = Binder.get(environment)
+                .bind("client.client-id", Bindable.listOf(String.class))
+                .get();
+        System.out.println(clientIds);
 
-        RegisteredClient registeredClient = RegisteredClient.withId(UUID.randomUUID().toString())
-                .clientId(clientId)
-                .clientAuthenticationMethod(ClientAuthenticationMethod.NONE)
-                .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
-                .redirectUris(uris -> uris.addAll(redirectUris))
-                .scope(OidcScopes.OPENID)
-                .clientSettings(ClientSettings.builder()
-                        .requireAuthorizationConsent(requireAuthorizationConsent)
-                        .requireProofKey(requireProofKey)
-                        .build())
-                .tokenSettings(TokenSettings.builder()
-                        .accessTokenTimeToLive(Duration.ofDays(accessTokenTimeToLive))
-                        .build())
-                .build();
-        return new InMemoryRegisteredClientRepository(registeredClient);
+        List<RegisteredClient> registeredClients = new ArrayList<>();
+
+        for (String clientId : clientIds) {
+            RegisteredClient registeredClient = RegisteredClient.withId(UUID.randomUUID().toString())
+                    .clientId(clientId)
+                    .clientAuthenticationMethod(ClientAuthenticationMethod.NONE)
+                    .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+                    .redirectUris(uris -> uris.addAll(redirectUris))
+                    .scope(OidcScopes.OPENID)
+                    .clientSettings(ClientSettings.builder()
+                            .requireAuthorizationConsent(requireAuthorizationConsent)
+                            .requireProofKey(requireProofKey)
+                            .build())
+                    .tokenSettings(TokenSettings.builder()
+                            .accessTokenTimeToLive(Duration.ofDays(accessTokenTimeToLive))
+                            .build())
+                    .build();
+
+            registeredClients.add(registeredClient);
+        }
+
+        return new InMemoryRegisteredClientRepository(registeredClients);
 
     }
 
@@ -117,7 +129,7 @@ public class AuthorizationServerConfig {
     }
 
     @Bean
-    public JwtDecoder jwtDecoder(JWKSource<SecurityContext> jwkSource){
+    public JwtDecoder jwtDecoder(JWKSource<SecurityContext> jwkSource) {
         return OAuth2AuthorizationServerConfiguration.jwtDecoder(jwkSource);
     }
 
@@ -131,6 +143,7 @@ public class AuthorizationServerConfig {
     public SecurityFilterChain authorizationFilterChain(HttpSecurity http) throws Exception {
         OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
         http.csrf(AbstractHttpConfigurer::disable)
+                .cors(AbstractHttpConfigurer::disable)
                 .addFilterBefore(myCorsFilter, ChannelProcessingFilter.class);
         http.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
                 .oidc(Customizer.withDefaults());
@@ -147,12 +160,38 @@ public class AuthorizationServerConfig {
     @Bean
     @Order(2)
     public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
-        http.formLogin(Customizer.withDefaults());
+        http.formLogin(Customizer.withDefaults())
+                .csrf(AbstractHttpConfigurer::disable)
+                .cors(AbstractHttpConfigurer::disable)
+                .addFilterBefore(myCorsFilter, ChannelProcessingFilter.class);
         http.authorizeHttpRequests(auth -> auth
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                .anyRequest().authenticated()
+                .anyRequest().permitAll()
         );
+
+        http.logout(logout -> logout
+                .logoutUrl("/logout") // URL để xử lý yêu cầu logout
+                .logoutSuccessHandler((request, response, authentication) -> {
+                    String accessToken = request.getHeader("Authorization");
+                    if (accessToken != null && accessToken.startsWith("Bearer ")) {
+                        accessToken = accessToken.substring(7);  // Loại bỏ 'Bearer ' khỏi token
+                        // Lưu access token vào Redis
+                        tokenService.blacklistToken(accessToken);
+                    }
+                    response.setStatus(HttpServletResponse.SC_OK);
+                    response.setContentType("application/json");
+                    response.setCharacterEncoding("UTF-8");
+
+                    // Tạo message JSON
+                    String jsonMessage = "{\"message\": \"Logged out successfully\"}";
+
+                    // Ghi message vào response
+                    response.getWriter().write(jsonMessage);
+                })
+                .invalidateHttpSession(true)  // Hủy session hiện tại
+                .clearAuthentication(true)    // Xóa thông tin xác thực
+        );
+
         return http.build();
     }
 
@@ -162,29 +201,34 @@ public class AuthorizationServerConfig {
     }
 
     @Bean
-    public OAuth2TokenCustomizer<JwtEncodingContext> jwtTokenCustomizer() {
+    public OAuth2TokenCustomizer<JwtEncodingContext> jwtTokenCustomizer(HttpServletResponse httpServletResponse) {
+
         return (context) -> {
             if (OAuth2TokenType.ACCESS_TOKEN.equals(context.getTokenType())) {
                 context.getClaims().claims((claims) -> {
                     Set<String> roles = AuthorityUtils.authorityListToSet(context.getPrincipal().getAuthorities());
                     claims.put("scope", roles);
+                    if (context.getRegisteredClient().getClientId().equals("admin-client")
+                            && !roles.contains("ROLE_ADMIN")) {
+                        try {
+                            httpServletResponse.sendError(403);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
                 });
             }
         };
     }
 
     @Bean
-    public WebMvcConfigurer corsConfigurer() {
-        return new WebMvcConfigurer() {
-            @Override
-            public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**")
-                        .allowedOrigins("http://localhost:8083") // Thay bằng domain phù hợp
-                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                        .allowedHeaders("Authorization", "Content-Type", "X-Requested-With")
-                        .exposedHeaders("XSRF-TOKEN")
-                        .allowCredentials(true);
-            }
-        };
+    public JwtAuthenticationConverter jwtAuthenticationConverter() {
+        JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
+        grantedAuthoritiesConverter.setAuthorityPrefix("");
+        JwtAuthenticationConverter authConverter = new JwtAuthenticationConverter();
+        authConverter.setJwtGrantedAuthoritiesConverter(grantedAuthoritiesConverter);
+        return authConverter;
     }
+
+
 }

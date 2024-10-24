@@ -26,4 +26,6 @@ public class AccountCreateRequest implements Serializable {
     @Pattern(message = "Password invalid", regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*[\\W_]).{8,}$ ")
     @NotBlank(message = "password must not be blank")
     private String password;
+    @NotBlank(message = "password must not be blank")
+    private Integer RoleId;
 }
