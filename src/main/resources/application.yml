@@ -78,3 +78,7 @@ eureka:
 
 url:
   base-url: ${SSL}://${DOMAIN}/api/v1
+  login-page-url: /auth/login
+  login-url: /login
+  verify-url: /auth/verify
+  register-page-url: /auth/register #fe's url

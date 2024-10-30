@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html layout:decorate="~{layout/auth-layout}" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.ultraq.net.nz/thymeleaf/layout " lang="">
+<head>
+  <meta charset="UTF-8">
+  <title>TRIP BOOKING - Đăng nhập</title>
+</head>
+<body>
+<div layout:fragment="form">
+  <form class="w-[400px] mt-6 flex flex-col justify-center items-center"
+        id="login-form"
+        method="post"
+        th:action="@{/login}"
+  >
+    <div class="mt-4 w-full">
+      <label class="block text-[13px] text-label font-medium font-comfortaa uppercase mb-4" for="username">
+        Email <span class="text-[13px] text-red-800 font-medium font-comfortaa">*</span>
+      </label>
+      <input
+              autofocus
+              class="w-full form-input bg-transparent placeholder-placeHolder text-label font-medium font-comfortaa border-0 h-8 focus:border-0 focus:ring-0 focus:outline-none"
+              id="username"
+              name="username"
+              placeholder="yourmail@gmail.com" required
+              type="text"
+      >
+      <div class="w-full h-[1px] bg-customBack"></div>
+    </div>
+    <div class="mt-8 w-full">
+      <label class="block text-[13px] text-label font-medium font-comfortaa uppercase mb-4" for="password">
+        Mật khẩu <span class="text-[13px] text-red-800 font-medium font-comfortaa">*</span>
+      </label>
+      <input
+              class="w-full form-input bg-transparent placeholder-placeHolder text-label font-medium font-comfortaa border-0 h-8 focus:border-0 focus:ring-0 focus:outline-none"
+              id="password"
+              name="password"
+              placeholder="**********"
+              required
+              type="password"
+      >
+      <div class="w-full h-[1px] bg-customBack"></div>
+    </div>
+    <div class="mt-1 w-full font-comfortaa flex justify-start text-[12px] text-red-800" th:if="${error}">* Đăng nhập
+      thất bại: sai tên tài khoản hoặc mật khẩu.
+    </div>
+    <div class="mt-4 w-full flex justify-end items-end">
+      <label class="block text-[13px] text-customBack font-bold font-comfortaa mb-4 cursor-pointer">
+        Quên mật khẩu
+      </label>
+    </div>
+    <button class="px-5 py-2 text-white bg-buttonColor text-[15px] w-[160px] horizontal-line rounded-3xl font-inter font-semibold" type="submit">
+      Đăng nhập
+    </button>
+    <div class="mt-2 w-full flex justify-center items-center space-x-2">
+      <label class="block text-[12px] text-label font-bold font-comfortaa mb-4">Chưa có tài khoản?</label>
+      <label class="block text-[12px] text-customBack font-bold font-comfortaa mb-4 cursor-pointer">
+        <a>Đăng ký</a>
+      </label>
+    </div>
+<!--    <div class="mt-4 w-[400px] flex justify-center items-center space-x-3">-->
+<!--      <div class="w-full h-[1px] bg-placeHolder"></div>-->
+<!--      <label class="block text-[16px] text-label font-bold font-comfortaa uppercase">hoặc </label>-->
+<!--      <div class="w-full h-[1px] bg-placeHolder"></div>-->
+<!--    </div>-->
+<!--    <div class="mt-4 w-[400px] flex justify-center items-center space-x-4">-->
+<!--      <button class="bg-cover w-9 h-9 bg-center bg-iconFacebook"></button>-->
+<!--      <button class="bg-cover w-9 h-9 bg-center bg-iconGoogle"></button>-->
+<!--      <button class="bg-cover w-9 h-9 bg-center bg-iconTwitter"></button>-->
+<!--    </div>-->
+  </form>
+</div>
+</body>
+</html>

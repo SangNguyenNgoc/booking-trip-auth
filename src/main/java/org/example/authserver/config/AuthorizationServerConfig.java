@@ -76,6 +76,12 @@ public class AuthorizationServerConfig {
     @Value("${spring.security.oauth2.authorizationserver.issuer}")
     private String iss;
 
+    @Value("${url.login-page-url}")
+    private String loginPageUrl;
+
+    @Value("${url.login-url}")
+    private String loginUrl;
+
     private final MyCorsFilter myCorsFilter;
 
     @Bean
@@ -137,7 +143,7 @@ public class AuthorizationServerConfig {
                 .oidc(Customizer.withDefaults());
         http.exceptionHandling(exception -> {
             exception.defaultAuthenticationEntryPointFor(
-                    new LoginUrlAuthenticationEntryPoint("/login"),
+                    new LoginUrlAuthenticationEntryPoint(loginPageUrl),
                     new MediaTypeRequestMatcher((MediaType.TEXT_HTML))
             );
         });
@@ -151,9 +157,22 @@ public class AuthorizationServerConfig {
         http.formLogin(Customizer.withDefaults());
         http.authorizeHttpRequests(auth -> auth
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
+                .requestMatchers(
+                        "/auth/**",
+                        "/css/**",
+                        "/fonts/**",
+                        "/images/**",
+                        "/js/**",
+                        "/error"
+                )
+                .permitAll()
                 .anyRequest().authenticated()
         );
-        http.addFilterBefore(myCorsFilter, ChannelProcessingFilter.class);
+        http.addFilterBefore(myCorsFilter, ChannelProcessingFilter.class)
+                .formLogin(login -> login
+                        .loginPage(loginPageUrl)
+                        .loginProcessingUrl(loginUrl)
+                        .permitAll());
         return http.build();
     }
 
