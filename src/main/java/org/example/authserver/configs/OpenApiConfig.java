@@ -1,4 +1,4 @@
-package org.example.authserver.config;
+package org.example.authserver.configs;
 
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeIn;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;

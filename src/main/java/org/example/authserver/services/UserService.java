@@ -1,18 +1,17 @@
-package org.example.authserver.service;
+package org.example.authserver.services;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.example.authserver.dto.AccountCreateRequest;
+import org.example.authserver.dtos.AccountCreateRequest;
+import org.example.authserver.dtos.AccountCreatedError;
 import org.example.authserver.interfaces.RoleRepository;
 import org.example.authserver.interfaces.UserMapper;
 import org.example.authserver.interfaces.UserRepository;
-import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.logging.Logger;
 
 public interface UserService {
     void createAccount(AccountCreateRequest accountCreateRequest);
@@ -26,6 +25,7 @@ class UserServiceImpl implements UserService{
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
     @Override
     @Transactional
     @KafkaListener(
@@ -34,12 +34,23 @@ class UserServiceImpl implements UserService{
     )
     public void createAccount(AccountCreateRequest accountCreateRequest) {
         log.info("Received account" + accountCreateRequest.getProfileId());
-        var role = roleRepository.findById(2).orElseThrow();
-        var newAccountUser = userMapper.toEntity(accountCreateRequest);
-        newAccountUser.setPassword(passwordEncoder.encode(newAccountUser.getPassword()));
-        newAccountUser.setRole(role);
-        newAccountUser.setVerify(false);
-        userRepository.save(newAccountUser);
+        try {
+            var role = roleRepository.findById(accountCreateRequest.getRoleId());
+            var newAccountUser = userMapper.toEntity(accountCreateRequest);
+            newAccountUser.setPassword(passwordEncoder.encode(newAccountUser.getPassword()));
+            newAccountUser.setRole(role.get());
+            newAccountUser.setVerify(false);
+            userRepository.save(newAccountUser);
+        }catch (Exception ex){
+            ex.printStackTrace(); // In chi tiết lỗi
+
+            kafkaTemplate.send("AccountCreatedFailed", AccountCreatedError.builder()
+                    .email(accountCreateRequest.getUsername())
+                    .profileId(accountCreateRequest.getProfileId())
+                    .message(ex.getMessage())
+            );
+        }
+
     }
 }
 
