@@ -82,7 +82,6 @@ public class AuthorizationServerConfig {
     @Value("${url.login-url}")
     private String loginUrl;
 
-    private final MyCorsFilter myCorsFilter;
 
     @Bean
     public RegisteredClientRepository registeredClientRepository() {
@@ -92,7 +91,6 @@ public class AuthorizationServerConfig {
         List<String> clientIds = Binder.get(environment)
                 .bind("client.client-id", Bindable.listOf(String.class))
                 .get();
-        System.out.println(clientIds);
 
         List<RegisteredClient> registeredClients = new ArrayList<>();
 
@@ -183,7 +181,6 @@ public class AuthorizationServerConfig {
                         "/error"
                 )
                 .permitAll()
-                .anyRequest().authenticated()
                 .anyRequest().permitAll()
         );
         http.addFilterBefore(myCorsFilter, ChannelProcessingFilter.class)
