@@ -11,8 +11,8 @@ import java.io.Serializable;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AccountCreatedError implements Serializable {
-    private String message;
-    private String profileId;
+public class AccountVerified implements Serializable {
     private String email;
+    private String fullName;
+    private String verifyToken;
 }

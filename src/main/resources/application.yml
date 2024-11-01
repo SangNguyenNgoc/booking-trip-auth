@@ -86,11 +86,12 @@ eureka:
       defaultZone: ${EUREKA_DEFAULT_ZONE}
 
 url:
-  base-url: ${SSL}://${DOMAIN}/api/v1
+  base-url: ${SSL}://${DOMAIN}
   login-page-url: /auth/login
   login-url: /login
   verify-url: /auth/verify
   register-page-url: /auth/register #fe's url
+  home-page-url: ${SSL}://${FE_DOMAIN}
 
 
 springdoc:

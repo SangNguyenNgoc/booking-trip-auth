@@ -1,7 +1,10 @@
 package org.example.authserver.controllers;
 
 import lombok.RequiredArgsConstructor;
+import org.example.authserver.services.UserService;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,6 +18,8 @@ public class AuthController {
 
     @Value("${url.base-url}")
     private String baseUri;
+
+    private final UserService userService;
 
     @GetMapping("/login")
     public String loginPage(
@@ -30,11 +35,11 @@ public class AuthController {
     }
 
 
-//    @GetMapping("/verify")
-//    public ResponseEntity<Void> verify(@RequestParam(name = "t") String token) {
-//        return ResponseEntity.status(HttpStatus.FOUND)
-//                .location(userService.verify(token))
-//                .build();
-//    }
+    @GetMapping("/verify")
+    public ResponseEntity<Void> verify(@RequestParam(name = "t") String token) {
+        return ResponseEntity.status(HttpStatus.FOUND)
+                .location(userService.verify(token))
+                .build();
+    }
 
 }

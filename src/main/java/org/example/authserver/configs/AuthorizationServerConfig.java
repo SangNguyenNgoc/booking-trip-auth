@@ -25,7 +25,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.core.oidc.OidcScopes;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.server.authorization.InMemoryOAuth2AuthorizationService;
+import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationService;
 import org.springframework.security.oauth2.server.authorization.OAuth2TokenType;
 import org.springframework.security.oauth2.server.authorization.client.InMemoryRegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
@@ -45,11 +46,6 @@ import org.springframework.security.web.authentication.LoginUrlAuthenticationEnt
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
 
 import java.io.IOException;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
-import java.security.interfaces.RSAPrivateKey;
-import java.security.interfaces.RSAPublicKey;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -71,8 +67,6 @@ public class AuthorizationServerConfig {
     private Boolean requireProofKey;
     @Value("${token.access-token-time-to-live}")
     private Integer accessTokenTimeToLive;
-    @Value("${token.key-size}")
-    private Integer keySize;
     @Value("${spring.security.oauth2.authorizationserver.issuer}")
     private String iss;
 
@@ -115,28 +109,6 @@ public class AuthorizationServerConfig {
 
         return new InMemoryRegisteredClientRepository(registeredClients);
 
-    }
-
-    @Bean
-    public JWKSource<SecurityContext> jwkSource() throws NoSuchAlgorithmException {
-        KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
-        generator.initialize(keySize);
-        KeyPair keyPair = generator.generateKeyPair();
-
-        RSAPublicKey publicKey = (RSAPublicKey) keyPair.getPublic();
-        RSAPrivateKey privateKey = (RSAPrivateKey) keyPair.getPrivate();
-
-        RSAKey rsaKey = new RSAKey.Builder(publicKey)
-                .privateKey(privateKey)
-                .keyID(UUID.randomUUID().toString())
-                .build();
-
-        return ((jwkSelector, context) -> jwkSelector.select(new JWKSet(rsaKey)));
-    }
-
-    @Bean
-    public JwtDecoder jwtDecoder(JWKSource<SecurityContext> jwkSource) {
-        return OAuth2AuthorizationServerConfiguration.jwtDecoder(jwkSource);
     }
 
     @Bean
@@ -248,6 +220,11 @@ public class AuthorizationServerConfig {
         JwtAuthenticationConverter authConverter = new JwtAuthenticationConverter();
         authConverter.setJwtGrantedAuthoritiesConverter(grantedAuthoritiesConverter);
         return authConverter;
+    }
+
+    @Bean
+    public OAuth2AuthorizationService authorizationService() {
+        return new InMemoryOAuth2AuthorizationService();
     }
 
 
