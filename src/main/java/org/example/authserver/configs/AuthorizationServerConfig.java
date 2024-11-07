@@ -1,9 +1,5 @@
 package org.example.authserver.configs;
 
-import com.nimbusds.jose.jwk.JWKSet;
-import com.nimbusds.jose.jwk.RSAKey;
-import com.nimbusds.jose.jwk.source.JWKSource;
-import com.nimbusds.jose.proc.SecurityContext;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.example.authserver.filters.MyCorsFilter;
@@ -15,7 +11,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -43,6 +41,7 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtGra
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.channel.ChannelProcessingFilter;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
+import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
 
 import java.io.IOException;
@@ -59,7 +58,7 @@ public class AuthorizationServerConfig {
     private final Environment environment;
     private final MyCorsFilter myCorsFilter;
     private final TokenService tokenService;
-    //    @Value("${client.client-id:default}")
+//    @Value("${client.client-id:default}")
 //    private String clientId;
     @Value("${client.settings.require-authorization-consent}")
     private Boolean requireAuthorizationConsent;
@@ -155,11 +154,24 @@ public class AuthorizationServerConfig {
                 .permitAll()
                 .anyRequest().permitAll()
         );
-        http.addFilterBefore(myCorsFilter, ChannelProcessingFilter.class)
-                .formLogin(login -> login
-                        .loginPage(loginPageUrl)
-                        .loginProcessingUrl(loginUrl)
-                        .permitAll());
+        http.addFilterBefore(myCorsFilter, ChannelProcessingFilter.class);
+        SavedRequestAwareAuthenticationSuccessHandler successHandler = new SavedRequestAwareAuthenticationSuccessHandler();
+        successHandler.setDefaultTargetUrl("/defaultUrl");
+        http.formLogin(login -> login
+                .successHandler((request, response, authentication) -> {
+                    ResponseCookie cookie = ResponseCookie.from("JSESSIONID", request.getSession().getId())
+                            .domain(".devsphere.id.vn")
+                            .path("/")
+                            .secure(true)
+                            .sameSite("None")
+                            .httpOnly(true)
+                            .build();
+                    response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+                    successHandler.onAuthenticationSuccess(request, response, authentication);
+                })
+                .loginPage(loginPageUrl)
+                .loginProcessingUrl(loginUrl)
+                .permitAll());
 
         http.logout(logout -> logout
                 .logoutUrl("/logout") // URL để xử lý yêu cầu logout
