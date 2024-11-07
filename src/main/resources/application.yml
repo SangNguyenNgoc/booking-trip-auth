@@ -56,10 +56,10 @@ client:
     - admin-client
   redirect-uris:
     - ${SSL}://${DOMAIN}/authorized
-    - http:localhost:3000/authorized
+    - http://localhost:3000/authorized
     - https://oauth.pstmn.io/v1/callback
     - http://${SWAGGER_DOMAIN}/swagger-ui/oauth2-redirect.html
-    - http:localhost:3000/logout
+    - http://localhost:3000/logout
     - ${SSL}://${FE_DOMAIN}/authorized
   settings:
     require-authorization-consent: false
