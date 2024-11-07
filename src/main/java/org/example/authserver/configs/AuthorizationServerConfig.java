@@ -155,20 +155,7 @@ public class AuthorizationServerConfig {
                 .anyRequest().permitAll()
         );
         http.addFilterBefore(myCorsFilter, ChannelProcessingFilter.class);
-        SavedRequestAwareAuthenticationSuccessHandler successHandler = new SavedRequestAwareAuthenticationSuccessHandler();
-        successHandler.setDefaultTargetUrl("/defaultUrl");
         http.formLogin(login -> login
-                .successHandler((request, response, authentication) -> {
-                    ResponseCookie cookie = ResponseCookie.from("JSESSIONID", request.getSession().getId())
-                            .domain(".devsphere.id.vn")
-                            .path("/")
-                            .secure(true)
-                            .sameSite("None")
-                            .httpOnly(true)
-                            .build();
-                    response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
-                    successHandler.onAuthenticationSuccess(request, response, authentication);
-                })
                 .loginPage(loginPageUrl)
                 .loginProcessingUrl(loginUrl)
                 .permitAll());
