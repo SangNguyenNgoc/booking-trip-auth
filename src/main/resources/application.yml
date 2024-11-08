@@ -61,6 +61,9 @@ client:
     - http://${SWAGGER_DOMAIN}/swagger-ui/oauth2-redirect.html
     - http://localhost:3000/logout
     - ${SSL}://${FE_DOMAIN}/authorized
+    - ${SSL}://${FE_DOMAIN}/api/auth
+    - http://localhost:3000/api/auth
+    - http://localhost:3000/api/auth/callback/tour
   settings:
     require-authorization-consent: false
     require-proof-key: true
