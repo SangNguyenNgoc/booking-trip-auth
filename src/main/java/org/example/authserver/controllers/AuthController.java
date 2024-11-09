@@ -24,6 +24,7 @@ public class AuthController {
     @GetMapping("/login")
     public String loginPage(
             @Value("${url.register-page-url}") String registerPageUrl,
+            @Value("${url.home-page-url}") String homePageUrl,
             @RequestParam(name = "error", required = false) String error,
             Model model
     ) {
@@ -31,6 +32,7 @@ public class AuthController {
             model.addAttribute("error", true);
         }
         model.addAttribute("register_page", registerPageUrl);
+        model.addAttribute("home_page", homePageUrl);
         return "login";
     }
 

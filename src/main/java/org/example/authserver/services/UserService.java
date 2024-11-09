@@ -51,7 +51,7 @@ class UserServiceImpl implements UserService{
             id = "createAccountGroup"
     )
     public void createAccount(AccountCreateRequest accountCreateRequest) {
-        log.info("Received account" + accountCreateRequest.getFullName());
+        log.info("Received account{}", accountCreateRequest.getFullName());
         try {
             var role = roleRepository.findById(accountCreateRequest.getRoleId()).orElseThrow(
                     ()-> new AppException("Role not found", HttpStatus.NOT_FOUND, List.of("Role not found"))
@@ -83,26 +83,36 @@ class UserServiceImpl implements UserService{
     public URI verify(String token) {
         if (tokenService.isTokenExpired(token)) {
             return UriComponentsBuilder.fromUriString(baseFeUri)
-                    .path("/") // /redirect to client page to handler, fe will get parameter and call token from be
-                    .queryParam("expired_url", true)
+                    .path("/verified") // /redirect to client page to handler, fe will get parameter and call token from be
+                    .queryParam("expired", true)
                     .build()
                     .toUri();
         }
         String userName = tokenService.extractSubject(token);
-        User user = userRepository.findByProfileIdAndVerifyFalse(userName).orElseThrow(
-                () -> new UsernameNotFoundException("User not found"));
+        User user = userRepository.findByProfileIdAndVerifyFalse(userName).orElse(null);
+        if (user == null) {
+            return UriComponentsBuilder.fromUriString(baseFeUri)
+                    .path("/verified") // Trang xử lý khi không tìm thấy user
+                    .queryParam("not-found", true)
+                    .build()
+                    .toUri();
+        }
         user.setVerify(true);
         try {
             String codeVerified = authorizationCodeService.generateCodeVerifier();
             String authCode = authorizationCodeService.generateAuthorizationCode(user, codeVerified).getTokenValue();
             return UriComponentsBuilder.fromUriString(baseFeUri)
-                    .path("/") // /redirect to client page to handler, fe will get parameter and call token from be
+                    .path("/verified") // /redirect to client page to handler, fe will get parameter and call token from be
                     .queryParam("code", codeVerified)
                     .queryParam("code_verified", authCode)
                     .build()
                     .toUri();
         } catch (NoSuchAlgorithmException e) {
-            throw new AppException("Server error.", HttpStatus.INTERNAL_SERVER_ERROR, List.of("Internal server error"));
+            return UriComponentsBuilder.fromUriString(baseFeUri)
+                    .path("/verified")
+                    .queryParam("server-error", true)
+                    .build()
+                    .toUri();
         }
     }
 }

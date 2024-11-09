@@ -8,7 +8,7 @@
 </head>
 <body>
 <div layout:fragment="form">
-  <form class="w-[400px] mt-6 flex flex-col justify-center items-center"
+  <form class="w-full mt-6 flex flex-col justify-center items-center"
         id="login-form"
         method="post"
         th:action="@{/login}"
@@ -49,13 +49,13 @@
         Quên mật khẩu
       </label>
     </div>
-    <button class="px-5 py-2 text-white bg-buttonColor text-[15px] w-[160px] horizontal-line rounded-3xl font-inter font-semibold" type="submit">
+    <button class="px-0 sm:px-5 py-2 text-white bg-buttonColor text-sm sm:text-[15px] w-[100px] sm:w-[160px] horizontal-line rounded-3xl font-inter font-semibold" type="submit">
       Đăng nhập
     </button>
     <div class="mt-2 w-full flex justify-center items-center space-x-2">
       <label class="block text-[12px] text-label font-bold font-comfortaa mb-4">Chưa có tài khoản?</label>
       <label class="block text-[12px] text-customBack font-bold font-comfortaa mb-4 cursor-pointer">
-        <a href="http://localhost:3000/dang-ky">Đăng ký</a>
+        <a th:href="${register_page}">Đăng ký</a>
       </label>
     </div>
   </form>

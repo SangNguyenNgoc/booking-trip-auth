@@ -11,21 +11,26 @@
 </head>
 <body>
 <div class="flex flex-col items-center justify-center h-screen bg-loginBackground w-full relative">
-  <div class="absolute z-10 w-3/4 h-2/3 rounded-2xl bg-formBackground flex justify-center items-center py-10 shadow-2xl space-x-10">
-    <div class="bg-image w-1/2 h-5/6 bg-cover bg-center uppercase font-bold text-3xl text-customBack px-6">
-      Cùng bạn trên mọi nẻo đường
+  <div class="absolute z-10 h-fit rounded-2xl bg-formBackground flex justify-center shadow-2xl w-4/5 sm:w-3/5 lg:w-3/4 2xl:w-[1530px] py-10">
+    <div class="relative mt-5 hidden w-1/2 flex-1 px-8 lg:block">
+      <div class="text-customBack bg-image h-full w-full bg-contain bg-no-repeat"></div>
+      <p class="absolute left-14 top-0 pe-20 text-2xl font-bold uppercase text-sky-300">
+        Cùng bạn trên mọi nẻo đường
+      </p>
     </div>
-    <div class="h-5/6">
-      <div class="w-[400px] flex flex-col justify-center items-center">
-        <p class="font-bold text-[16px] text-buttonColor font-comfortaa">Welcome</p>
-        <h1 class="font-bold text-[28px] text-label font-inter">TO TRIP BOOKING</h1>
+    <div class="h-5/6 w-full lg:w-1/2">
+      <div class="flex w-full flex-col items-center justify-center">
+        <p class="text-[16px] font-bold font-comfortaa text-sky-300">Welcome</p>
+        <h1 class="text-label text-center font-inter text-[16px] font-bold sm:text-[28px]">
+          TO TRIP BOOKING
+        </h1>
       </div>
-      <div layout:fragment="form">
+      <div layout:fragment="form" class="px-10 w-full">
       </div>
     </div>
   </div>
   <div class="absolute bg-gradient-to-b from-sky-400 to-sky-600 h-56 w-full top-0 z-0 flex justify-center items-start">
-    <a href="https://futabus.vn/">
+    <a th:href="${home_page}">
       <div class="bg-logo w-72 h-14 bg-cover bg-center"></div>
     </a>
   </div>

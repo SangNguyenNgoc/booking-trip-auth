@@ -63,7 +63,8 @@ client:
     - ${SSL}://${FE_DOMAIN}/authorized
     - ${SSL}://${FE_DOMAIN}/api/auth
     - http://localhost:3000/api/auth
-    - http://localhost:3000/api/auth/callback/tour
+    - http://localhost:3000/api/auth/callback/client
+    - ${SSL}://${FE_DOMAIN}/api/auth/callback/client
   settings:
     require-authorization-consent: false
     require-proof-key: true
@@ -95,7 +96,7 @@ url:
   login-page-url: /auth/login
   login-url: /login
   verify-url: /auth/verify
-  register-page-url: /auth/register #fe's url
+  register-page-url: ${SSL}://${FE_DOMAIN}/dang-ky #fe's url
   home-page-url: ${SSL}://${FE_DOMAIN}
 
 
