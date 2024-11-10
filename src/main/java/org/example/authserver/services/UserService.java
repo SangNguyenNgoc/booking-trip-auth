@@ -7,6 +7,8 @@ import org.example.authserver.dtos.AccountCreatedError;
 import org.example.authserver.dtos.AccountVerified;
 import org.example.authserver.entities.User;
 import org.example.authserver.exception.AppException;
+import org.example.authserver.exception.TokenExpiredException;
+import org.example.authserver.exception.UserNotFoundException;
 import org.example.authserver.interfaces.RoleRepository;
 import org.example.authserver.interfaces.UserMapper;
 import org.example.authserver.interfaces.UserRepository;
@@ -26,7 +28,7 @@ import java.util.List;
 
 public interface UserService {
     void createAccount(AccountCreateRequest accountCreateRequest);
-    public URI verify(String token);
+    void verify(String token);
 }
 @Service
 @RequiredArgsConstructor
@@ -80,40 +82,30 @@ class UserServiceImpl implements UserService{
 
     @Override
     @Transactional
-    public URI verify(String token) {
+    public void verify(String token) {
         if (tokenService.isTokenExpired(token)) {
-            return UriComponentsBuilder.fromUriString(baseFeUri)
-                    .path("/verified") // /redirect to client page to handler, fe will get parameter and call token from be
-                    .queryParam("expired", true)
-                    .build()
-                    .toUri();
+            throw new TokenExpiredException("Url has expired.", List.of("Token has expired"));
         }
         String userName = tokenService.extractSubject(token);
-        User user = userRepository.findByProfileIdAndVerifyFalse(userName).orElse(null);
-        if (user == null) {
-            return UriComponentsBuilder.fromUriString(baseFeUri)
-                    .path("/verified") // Trang xử lý khi không tìm thấy user
-                    .queryParam("not-found", true)
-                    .build()
-                    .toUri();
-        }
+        User user = userRepository.findByProfileIdAndVerifyFalse(userName)
+                .orElseThrow(() -> new UserNotFoundException("User not found", List.of("User not found or already verified.")));
         user.setVerify(true);
-        try {
-            String codeVerified = authorizationCodeService.generateCodeVerifier();
-            String authCode = authorizationCodeService.generateAuthorizationCode(user, codeVerified).getTokenValue();
-            return UriComponentsBuilder.fromUriString(baseFeUri)
-                    .path("/verified") // /redirect to client page to handler, fe will get parameter and call token from be
-                    .queryParam("code", codeVerified)
-                    .queryParam("code_verified", authCode)
-                    .build()
-                    .toUri();
-        } catch (NoSuchAlgorithmException e) {
-            return UriComponentsBuilder.fromUriString(baseFeUri)
-                    .path("/verified")
-                    .queryParam("server-error", true)
-                    .build()
-                    .toUri();
-        }
+//        try {
+//            String codeVerified = authorizationCodeService.generateCodeVerifier();
+//            String authCode = authorizationCodeService.generateAuthorizationCode(user, codeVerified).getTokenValue();
+//            return UriComponentsBuilder.fromUriString(baseFeUri)
+//                    .path("/verified") // /redirect to client page to handler, fe will get parameter and call token from be
+//                    .queryParam("code", codeVerified)
+//                    .queryParam("code_verified", authCode)
+//                    .build()
+//                    .toUri();
+//        } catch (NoSuchAlgorithmException e) {
+//            return UriComponentsBuilder.fromUriString(baseFeUri)
+//                    .path("/verified")
+//                    .queryParam("server-error", true)
+//                    .build()
+//                    .toUri();
+//        }
     }
 }
 
