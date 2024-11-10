@@ -1,5 +1,6 @@
 package org.example.authserver.configs;
 
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.example.authserver.filters.MyCorsFilter;
@@ -169,6 +170,14 @@ public class AuthorizationServerConfig {
                         // Lưu access token vào Redis
                         tokenService.blacklistToken(accessToken);
                     }
+
+                    request.getSession().invalidate();
+                    Cookie cookie = new Cookie("JSESSIONID", null);
+                    cookie.setPath("/");
+                    cookie.setHttpOnly(true);
+                    cookie.setMaxAge(0);
+                    response.addCookie(cookie);
+
                     response.setStatus(HttpServletResponse.SC_OK);
                     response.setContentType("application/json");
                     response.setCharacterEncoding("UTF-8");
