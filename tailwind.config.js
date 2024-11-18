@@ -6,7 +6,10 @@ module.exports = {
       backgroundImage: {
         image: "url('https://trip.s3-hcm-r1.s3cloud.vn/landing/TVC.svg')",
         notFound: "url('/images/error.svg')",
-        logo: "url('/images/Logo.svg')"
+        logo: "url('/images/Logo.svg')",
+        iconFacebook: "url('/images/IconFacebook.png')",
+        iconGoogle: "url('/images/IconGoogle.png')",
+        iconTwitter: "url('/images/IconTwitter.png')",
       },
       colors: {
         loginBackground: "#fff",

@@ -8,7 +8,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 
 
@@ -37,13 +36,17 @@ public class User implements UserDetails {
     @Column(name = "verify", nullable = false)
     private Boolean verify;
 
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
     @JoinColumn(
             name = "role_id",
             referencedColumnName = "id",
             nullable = false
     )
     private Role role;
+
+    @Column(name = "provider")
+    @Enumerated(EnumType.STRING)
+    private Provider provider;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

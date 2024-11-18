@@ -4,6 +4,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.example.authserver.filters.MyCorsFilter;
+import org.example.authserver.services.CustomOAuth2UserService;
 import org.example.authserver.services.TokenService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.bind.Bindable;
@@ -12,15 +13,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseCookie;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.authority.AuthorityUtils;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.core.oidc.OidcScopes;
@@ -42,7 +39,6 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtGra
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.channel.ChannelProcessingFilter;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
-import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
 
 import java.io.IOException;
@@ -59,20 +55,17 @@ public class AuthorizationServerConfig {
     private final Environment environment;
     private final MyCorsFilter myCorsFilter;
     private final TokenService tokenService;
-//    @Value("${client.client-id:default}")
-//    private String clientId;
+    private final CustomOAuth2UserService oauth2UserService;
+    private final OAuthGoogleSuccessHandler googleSuccessHandler;
+
     @Value("${client.settings.require-authorization-consent}")
     private Boolean requireAuthorizationConsent;
     @Value("${client.settings.require-proof-key}")
     private Boolean requireProofKey;
     @Value("${token.access-token-time-to-live}")
     private Integer accessTokenTimeToLive;
-    @Value("${spring.security.oauth2.authorizationserver.issuer}")
-    private String iss;
-
     @Value("${url.login-page-url}")
     private String loginPageUrl;
-
     @Value("${url.login-url}")
     private String loginUrl;
 
@@ -125,12 +118,10 @@ public class AuthorizationServerConfig {
                 .addFilterBefore(myCorsFilter, ChannelProcessingFilter.class);
         http.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
                 .oidc(Customizer.withDefaults());
-        http.exceptionHandling(exception -> {
-            exception.defaultAuthenticationEntryPointFor(
-                    new LoginUrlAuthenticationEntryPoint(loginPageUrl),
-                    new MediaTypeRequestMatcher((MediaType.TEXT_HTML))
-            );
-        });
+        http.exceptionHandling(exception -> exception.defaultAuthenticationEntryPointFor(
+                new LoginUrlAuthenticationEntryPoint(loginPageUrl),
+                new MediaTypeRequestMatcher((MediaType.TEXT_HTML))
+        ));
         http.oauth2ResourceServer(resource -> resource.jwt(Customizer.withDefaults()));
         return http.build();
     }
@@ -192,13 +183,14 @@ public class AuthorizationServerConfig {
                 .clearAuthentication(true)    // Xóa thông tin xác thực
         );
 
+        http.oauth2Login(oauth2 -> oauth2
+                .userInfoEndpoint(infoEndpoint -> infoEndpoint.userService(oauth2UserService))
+                .successHandler(googleSuccessHandler)
+        );
+
         return http.build();
     }
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
 
     @Bean
     public OAuth2TokenCustomizer<JwtEncodingContext> jwtTokenCustomizer(HttpServletResponse httpServletResponse) {

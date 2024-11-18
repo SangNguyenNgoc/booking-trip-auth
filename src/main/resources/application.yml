@@ -7,6 +7,14 @@ spring:
     oauth2:
       authorizationserver:
         issuer: ${AUTH_URL}
+      client:
+        registration:
+          google:
+            clientId: ${GOOGLE_CLIENT_ID}
+            clientSecret: ${GOOGLE_CLIENT_SECRET}
+            scope:
+              - email
+              - profile
   datasource:
     driverClassName: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/auth
@@ -98,6 +106,9 @@ url:
   verify-url: /auth/verify
   register-page-url: ${SSL}://${FE_DOMAIN}/dang-ky #fe's url
   home-page-url: ${SSL}://${FE_DOMAIN}
+
+  confirm-google-page: /auth/confirm-google
+  confirm-google-handle: /auth/confirm-google-handler
 
 
 springdoc:

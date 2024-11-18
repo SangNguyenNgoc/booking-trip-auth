@@ -10,15 +10,15 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
 </head>
 <body>
-<div class="flex flex-col items-center justify-center h-screen bg-loginBackground w-full relative">
+<div class="flex flex-col items-center justify-center h-screen w-full relative">
   <div class="absolute z-10 h-fit rounded-2xl bg-formBackground flex justify-center shadow-2xl w-4/5 sm:w-3/5 lg:w-3/4 2xl:w-[1530px] py-10">
-    <div class="relative mt-5 hidden w-1/2 flex-1 px-8 lg:block">
+    <div class="relative mt-5 hidden w-1/2 xl:w-3/5 flex-1 px-8 lg:block">
       <div class="text-customBack bg-image h-full w-full bg-contain bg-no-repeat"></div>
       <p class="absolute left-14 top-0 pe-20 text-2xl font-bold uppercase text-sky-300">
         Cùng bạn trên mọi nẻo đường
       </p>
     </div>
-    <div class="h-5/6 w-full lg:w-1/2">
+    <div class="h-5/6 w-full lg:w-1/2 xl:w-2/5">
       <div class="flex w-full flex-col items-center justify-center">
         <p class="text-[16px] font-bold font-comfortaa text-sky-300">Welcome</p>
         <h1 class="text-label text-center font-inter text-[16px] font-bold sm:text-[28px]">
@@ -39,7 +39,7 @@
   <div class="container mx-auto w-full flex-col flex-wrap items-start justify-between gap-5 px-4 py-10 md:px-0 lg:grid lg:grid-cols-3">
     <div class="flex flex-col lg:col-span-2">
       <div class="flex h-fit items-center justify-start gap-5">
-        <img src="" alt="" class="h-16" />
+        <img th:src="@{/images/Logo.svg}" alt="" class="h-16 w-64" />
         <div class="h-fit">
           <h2 class="mb-1 text-base font-semibold text-teal-600">
             Trung tâm tổng đài & CSKH

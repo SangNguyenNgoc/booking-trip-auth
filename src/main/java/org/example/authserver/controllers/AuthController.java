@@ -1,6 +1,8 @@
 package org.example.authserver.controllers;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
+import org.example.authserver.entities.Provider;
 import org.example.authserver.exception.TokenExpiredException;
 import org.example.authserver.exception.UserNotFoundException;
 import org.example.authserver.services.UserService;
@@ -12,16 +14,20 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+
 @Controller
 @RequestMapping("/auth")
 @RequiredArgsConstructor
+@Log4j2
 public class AuthController {
-
-    @Value("${url.base-url}")
-    private String baseUri;
 
     @Value("${url.home-page-url}")
     private String homePageUrl;
+
+    @Value("${url.confirm-google-handle}")
+    private String confirmGoogleHandler;
 
 
     private final UserService userService;
@@ -53,6 +59,28 @@ public class AuthController {
         return "verified";
     }
 
+    @GetMapping("/confirm-google")
+    public String confirmGooglePage(
+            @RequestParam(name = "c") String url,
+            @RequestParam(name = "id") String id,
+            Model model
+    ) {
+        var encodedUrl = URLEncoder.encode(url, StandardCharsets.UTF_8);
+        var handleUrl = confirmGoogleHandler + "?c=" + encodedUrl + "&id=" + id;
+        model.addAttribute("continue_url", handleUrl);
+        return "confirm-google";
+    }
+
+    @GetMapping("/confirm-google-handler")
+    public String handleConfirmGoogle(
+            @RequestParam(name = "c") String url,
+            @RequestParam(name = "id") String id
+    ) {
+        userService.updateProvider(Provider.GOOGLE, id);
+        return "redirect:" + url;
+    }
+
+
     @ExceptionHandler(TokenExpiredException.class)
     public String handleTokenExpiredException(
             TokenExpiredException ex,
@@ -60,7 +88,8 @@ public class AuthController {
     ) {
         model.addAttribute("home_page", homePageUrl);
         model.addAttribute("image", "/images/warn.svg");
-        model.addAttribute("notice", "Rất tiếc, đường dẫn đã hết hạn hoặc không hợp lệ!");
+        model.addAttribute("notice",
+                "Rất tiếc, đường dẫn đã hết hạn hoặc không hợp lệ!");
         return "verified";
     }
 

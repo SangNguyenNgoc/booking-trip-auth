@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Đăng ký thành công</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}" />
+    <link rel="stylesheet" th:href="@{/css/app.css}" />
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+
+</head>
+<body>
+
+<div class="flex flex-col items-center justify-start h-screen w-full relative">
+    <div class="flex flex-col justify-center items-center w-3/4 sm:w-2/3 lg:w-1/3 space-y-4 top-1/4 absolute">
+        <img alt="Icon" class="w-20 h-20 text-sky-500" th:src="@{/images/user.svg}">
+        <p class="text-center font-comfortaa font-bold text-md sm:text-xl">
+            Email của bạn đã được đăng ký trước đó, bạn có muốn tiếp tục? Nếu tiếp tục, dữ liệu trong tài khoản của bạn trước đó vân được lưu lại và bạn có thể đăng nhập qua Google từ bây giờ.
+        </p>
+        <div class="w-full sm:w-2/3 flex justify-center space-x-5">
+            <a class=" w-[160px] cursor-pointer horizontal-line rounded-3xl font-inter font-semibold bg-sky-500 py-3 text-white text-center text-sm">
+                Quay lại
+            </a>
+            <a class=" w-[160px] cursor-pointer horizontal-line rounded-3xl font-inter font-semibold bg-sky-500 py-3 text-white text-center text-sm"
+               th:href="${continue_url}"
+            >
+                Tiếp tục
+            </a>
+        </div>
+
+    </div>
+</div>
+<footer class="absolute top-full w-full bg-sky-50">
+    <div class="container mx-auto w-full flex-col flex-wrap items-start justify-between gap-5 px-4 py-10 md:px-0 lg:grid lg:grid-cols-3">
+        <div class="flex flex-col lg:col-span-2">
+            <div class="flex h-fit items-center justify-start gap-5">
+                <img src="" alt="" class="h-16" />
+                <div class="h-fit">
+                    <h2 class="mb-1 text-base font-semibold text-teal-600">
+                        Trung tâm tổng đài & CSKH
+                    </h2>
+                    <h1 class="text-sky-600 md:text-3xl">1900 6067</h1>
+                </div>
+            </div>
+            <h2 class="my-4 font-medium uppercase text-teal-700">
+                Công ty cổ phần xe khách Phương Trang - FUTA Bus Lines
+            </h2>
+            <p class="mt-1 text-gray-600">
+                <span class="inline text-sky-600">Địa chỉ: </span>Số 01 Tô
+                Hiến Thành, Phường 3, Thành phố Đà Lạt, Tỉnh Lâm Đồng, Việt
+                Nam.
+            </p>
+            <p class="mt-1 text-gray-600">
+                <span class="inline text-sky-600">Email: </span>
+                hotro@futa.vn{' '}
+            </p>
+            <p class="mt-1 text-gray-600">
+                <span class="inline text-sky-600">Điện thoại: </span>{' '}
+                02838386852
+            </p>
+        </div>
+        <div class="flex items-center justify-between">
+            <div>
+                <h3 class="font-semibold text-teal-700">
+                    FUTA Bus Lines
+                </h3>
+                <ul class="text-gray-5 00 pt-4">
+                    <li class="cursor-pointer py-1 md:hover:text-sky-600">
+                        Về chúng tôi
+                    </li>
+                    <li class="cursor-pointer py-1 md:hover:text-sky-600">
+                        Lịch trình
+                    </li>
+                    <li class="cursor-pointer py-1 md:hover:text-sky-600">
+                        Tuyển dụng
+                    </li>
+                    <li class="cursor-pointer py-1 md:hover:text-sky-600">
+                        Tin tức
+                    </li>
+                </ul>
+            </div>
+            <div>
+                <h3 class="font-semibold text-teal-700">Hỗ trợ</h3>
+                <ul class="text-gray-5 00 pt-4">
+                    <li class="cursor-pointer py-1 md:hover:text-sky-600">
+                        Tra cứu thông tin
+                    </li>
+                    <li class="cursor-pointer py-1 md:hover:text-sky-600">
+                        Câu hỏi thường gặp
+                    </li>
+                    <li class="cursor-pointer py-1 md:hover:text-sky-600">
+                        Chính sách và điều khoản
+                    </li>
+                    <li class="cursor-pointer py-1 md:hover:text-sky-600">
+                        Hướng dẫn đặt vé
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="w-full bg-sky-600 py-2">
+        <h5 class="w-full text-center text-sm text-white">
+            © 2023 | Bản quyền thuộc về Công ty Cổ Phần Xe khách Phương
+            Trang - FUTA Bus Lines 2023
+        </h5>
+    </div>
+</footer>
+</body>
+</html>
