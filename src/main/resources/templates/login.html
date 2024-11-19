@@ -63,12 +63,12 @@
       <label class="block text-[16px] text-label font-bold font-comfortaa uppercase">hoặc </label>
       <div class="w-full h-[1px] bg-placeHolder"></div>
     </div>
-    <div class="mt-4 w-[400px] flex justify-center items-center space-x-4">
-      <a class="px-0 sm:px-5 py-2 flex justify-center space-x-3 items-center border-gray-200 border text-sm sm:text-[15px] w-[200px] sm:w-[240px] horizontal-line rounded-3xl font-inter font-semibold"
+    <div class="mt-4 flex-col columns-1 space-y-2">
+      <a class="relative px-0 sm:px-5 py-2 flex justify-center items-center border-gray-200 border hover:bg-gray-200 text-sm sm:text-[15px] w-[200px] sm:w-[250px] rounded-3xl font-inter"
          th:href="@{/oauth2/authorization/google}"
       >
-        <div  class="bg-cover w-6 h-6 bg-center bg-iconGoogle"></div>
-        <p>Tiếp tục với google</p>
+        <div  class="bg-cover w-5 h-5 bg-center bg-iconGoogle absolute left-3"></div>
+        <p>Tiếp tục với Google</p>
       </a>
     </div>
   </form>
