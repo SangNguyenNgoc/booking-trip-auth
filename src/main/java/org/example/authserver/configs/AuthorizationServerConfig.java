@@ -69,6 +69,9 @@ public class AuthorizationServerConfig {
     @Value("${url.login-url}")
     private String loginUrl;
 
+    @Value("${url.home-page-url}")
+    private String homePageUrl;
+
 
     @Bean
     public RegisteredClientRepository registeredClientRepository() {
@@ -156,12 +159,6 @@ public class AuthorizationServerConfig {
                 .logoutUrl("/logout") // URL để xử lý yêu cầu logout
                 .logoutSuccessHandler((request, response, authentication) -> {
                     String accessToken = request.getHeader("Authorization");
-                    if (accessToken != null && accessToken.startsWith("Bearer ")) {
-                        accessToken = accessToken.substring(7);  // Loại bỏ 'Bearer ' khỏi token
-                        // Lưu access token vào Redis
-                        tokenService.blacklistToken(accessToken);
-                    }
-
                     request.getSession().invalidate();
                     Cookie cookie = new Cookie("JSESSIONID", null);
                     cookie.setPath("/");
@@ -172,12 +169,14 @@ public class AuthorizationServerConfig {
                     response.setStatus(HttpServletResponse.SC_OK);
                     response.setContentType("application/json");
                     response.setCharacterEncoding("UTF-8");
-
-                    // Tạo message JSON
-                    String jsonMessage = "{\"message\": \"Logged out successfully\"}";
-
-                    // Ghi message vào response
-                    response.getWriter().write(jsonMessage);
+                    if (accessToken != null && accessToken.startsWith("Bearer ")) {
+                        accessToken = accessToken.substring(7);  // Loại bỏ 'Bearer ' khỏi token
+                        tokenService.blacklistToken(accessToken);
+                        String jsonMessage = "{\"message\": \"Logged out successfully\"}";
+                        response.getWriter().write(jsonMessage);
+                        return;
+                    }
+                    response.sendRedirect(homePageUrl);
                 })
                 .invalidateHttpSession(true)  // Hủy session hiện tại
                 .clearAuthentication(true)    // Xóa thông tin xác thực
