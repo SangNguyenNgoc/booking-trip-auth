@@ -15,5 +15,5 @@ public class AccountNotified implements Serializable {
     private String profileId;
     private String email;
     private String password;
-
+    private String fullName;
 }

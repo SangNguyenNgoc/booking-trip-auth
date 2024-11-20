@@ -114,6 +114,7 @@ class UserServiceImpl implements UserService{
     @Transactional
     public CustomOAuth2User processOauth2User(OAuth2User oAuth2User) {
         String email = oAuth2User.getAttribute("email");
+        String name = oAuth2User.getAttribute("name");
         var user = userRepository.findByUsername(email);
         if (user.isPresent()) {
             return new CustomOAuth2User(user.get().getAuthorities(),
@@ -137,6 +138,7 @@ class UserServiceImpl implements UserService{
                     .email(email)
                     .password(password)
                     .profileId(profileId)
+                    .fullName(name)
                     .build();
             kafkaTemplate.send("AccountCreatedGG", accountNotified);
             kafkaTemplate.send("AccountCreatedGGNotified", accountNotified);
