@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.example.authserver.dtos.AccountCreateRequest;
 import org.example.authserver.dtos.AccountCreatedError;
+import org.example.authserver.dtos.AccountNotified;
 import org.example.authserver.dtos.AccountVerified;
 import org.example.authserver.entities.CustomOAuth2User;
 import org.example.authserver.entities.Provider;
@@ -14,6 +15,7 @@ import org.example.authserver.exception.UserNotFoundException;
 import org.example.authserver.interfaces.RoleRepository;
 import org.example.authserver.interfaces.UserMapper;
 import org.example.authserver.interfaces.UserRepository;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -42,6 +44,7 @@ class UserServiceImpl implements UserService{
     private final PasswordEncoder passwordEncoder;
     private final KafkaTemplate<String, Object> kafkaTemplate;
     private final TokenService tokenService;
+    private final RedisService<AccountNotified> redisTemplate;
 
     @Override
     @Transactional
@@ -119,15 +122,25 @@ class UserServiceImpl implements UserService{
             var role = roleRepository.findById(2).orElseThrow(
                     ()-> new AppException("Role not found", HttpStatus.NOT_FOUND, List.of("Role not found"))
             );
+            var password = UUID.randomUUID().toString();
+            var profileId = UUID.randomUUID().toString();
             User newUser = User.builder()
-                    .profileId(UUID.randomUUID().toString())
+                    .profileId(profileId)
                     .username(email)
-                    .password(passwordEncoder.encode(UUID.randomUUID().toString()))
+                    .password(passwordEncoder.encode(password))
                     .provider(Provider.GOOGLE)
                     .role(role)
                     .verify(true)
                     .build();
             userRepository.save(newUser);
+            var accountNotified = AccountNotified.builder()
+                    .email(email)
+                    .password(password)
+                    .profileId(profileId)
+                    .build();
+            kafkaTemplate.send("AccountCreatedGG", accountNotified);
+            kafkaTemplate.send("AccountCreatedGGNotified", accountNotified);
+            redisTemplate.setValue(profileId, accountNotified);
             return CustomOAuth2User.builder()
                     .user(newUser)
                     .attributes(oAuth2User.getAttributes())
