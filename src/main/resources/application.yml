@@ -109,6 +109,7 @@ url:
 
   confirm-google-page: /auth/confirm-google
   confirm-google-handle: /auth/confirm-google-handler
+  register-google-handle: /dang-nhap
 
 
 springdoc:
