@@ -25,6 +25,12 @@ public class OAuthGoogleSuccessHandler implements AuthenticationSuccessHandler {
     @Value("${url.confirm-google-page}")
     private String confirmUrl;
 
+    @Value("${url.home-page-url}")
+    private String homPageUrl;
+
+    @Value("${url.register-google-handle}")
+    private String handleOAuthUrl;
+
     @Override
     public void onAuthenticationSuccess(
             HttpServletRequest request,
@@ -45,6 +51,11 @@ public class OAuthGoogleSuccessHandler implements AuthenticationSuccessHandler {
                 return;
             }
         }
-        response.sendRedirect(savedRequest.getRedirectUrl());
+        if (savedRequest != null) {
+            response.sendRedirect(savedRequest.getRedirectUrl());
+        }
+        else {
+            response.sendRedirect(homPageUrl + handleOAuthUrl);
+        }
     }
 }
