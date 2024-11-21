@@ -1,18 +1,19 @@
 package org.example.authserver.controllers;
 
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.example.authserver.dtos.FormForgotPassword;
+import org.example.authserver.dtos.RequireForgotPassword;
 import org.example.authserver.entities.Provider;
 import org.example.authserver.exception.TokenExpiredException;
 import org.example.authserver.exception.UserNotFoundException;
 import org.example.authserver.services.UserService;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -80,6 +81,40 @@ public class AuthController {
         return "redirect:" + url;
     }
 
+    @GetMapping("/forgot-password")
+    public String forgotPassword(
+            @RequestParam(name = "t") String token,
+            Model model
+    ){
+        var user = userService.verifyForgotPassword(token);
+        model.addAttribute("token", user.getVerify());
+        model.addAttribute("email", user.getEmail());
+        return "forgot-password";
+    }
+
+    @PostMapping("/forgot-password")
+    public String forgotPassword(
+            @ModelAttribute FormForgotPassword forgotPassword,
+            Model model
+    ){
+        userService.forgotPassword(forgotPassword);
+        model.addAttribute("home_page", homePageUrl);
+        model.addAttribute("image", "/images/tick.svg");
+        model.addAttribute("notice", "Cập nhật mật khẩu thành công!");
+        return "verified";
+    }
+
+    @PostMapping("/require-forgot-password")
+    public String requireForgotPassword(
+            @ModelAttribute RequireForgotPassword requireForgotPassword,
+            Model model
+    ){
+        userService.requireForgotPassword(requireForgotPassword.getEmail());
+        model.addAttribute("home_page", homePageUrl);
+        model.addAttribute("image", "/images/tick.svg");
+        model.addAttribute("notice", "Xác nhận thành công!");
+        return "verified";
+    }
 
     @ExceptionHandler(TokenExpiredException.class)
     public String handleTokenExpiredException(

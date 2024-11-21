@@ -44,7 +44,7 @@
     <div class="mt-1 w-full font-comfortaa flex justify-start text-[12px] text-red-800" th:if="${error}">* Đăng nhập
       thất bại: sai tên tài khoản hoặc mật khẩu.
     </div>
-    <div class="mt-4 w-full flex justify-end items-end">
+    <div id="openModal" class="mt-4 w-full flex justify-end items-end">
       <label class="block text-[13px] text-customBack font-bold font-comfortaa mb-4 cursor-pointer">
         Quên mật khẩu
       </label>
@@ -72,6 +72,80 @@
       </a>
     </div>
   </form>
+  <div id="emailModal" class="hidden flex fixed inset-0 bg-gray-800 bg-opacity-50 items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-lg w-96 p-6">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Enter Your Email</h2>
+      <form id="emailForm" th:action="@{/auth/require-forgot-password}" method="post">
+        <input
+                type="email"
+                id="email"
+                name="email"
+                placeholder="Enter your email"
+                class="w-full p-2 border border-gray-300 rounded mb-4 focus:outline-none focus:ring focus:border-blue-500"
+                required
+        />
+        <button
+                type="submit"
+                class="w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
+        >
+          Submit
+        </button>
+      </form>
+      <button
+              id="closeModal"
+              class="mt-4 w-full bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600"
+      >
+        Cancel
+      </button>
+      <div id="response" class="mt-4 text-center text-red-500"></div>
+    </div>
+  </div>
+
+  <script>
+    // Modal Control
+    const openModal = document.getElementById('openModal');
+    const closeModal = document.getElementById('closeModal');
+    const emailModal = document.getElementById('emailModal');
+    const responseDiv = document.getElementById('response');
+
+    openModal.addEventListener('click', () => {
+      emailModal.classList.remove('hidden');
+    });
+
+    closeModal.addEventListener('click', () => {
+      emailModal.classList.add('hidden');
+      responseDiv.innerText = ''; // Clear response message
+    });
+
+    // Form Submission
+    // document.getElementById('emailForm').addEventListener('submit', async function (e) {
+    //   e.preventDefault(); // Prevent form reload
+    //   const email = document.getElementById('email').value;
+    //   console.log(email)
+    //
+    //   try {
+    //     const response = await fetch('/auth/require-forgot-password', { // Replace with your API
+    //       method: 'POST',
+    //       headers: {
+    //         'Content-Type': 'application/json',
+    //       },
+    //       body: JSON.stringify({ email }),
+    //     });
+    //
+    //     if (response.ok) {
+    //       responseDiv.style.color = 'green';
+    //       responseDiv.innerText = 'Email submitted successfully!';
+    //     } else {
+    //       responseDiv.style.color = 'red';
+    //       responseDiv.innerText = 'Failed to submit email.';
+    //     }
+    //   } catch (error) {
+    //     console.error(error);
+    //     responseDiv.style.color = 'red';
+    //     responseDiv.innerText = 'An error occurred. Please try again.';
+    //   }
+    // });
+  </script>
 </div>
 </body>
 </html>

@@ -11,6 +11,7 @@ import org.springframework.security.oauth2.jwt.*;
 import java.security.SecureRandom;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -32,14 +33,14 @@ public class TokenService {
         return Boolean.TRUE.equals(redisTemplate.hasKey(token));
     }
 
-    public String generateVerifyToken(User user) {
+    public String generateVerifyToken(User user, List<String> claim) {
         Instant now = Instant.now();
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuer("self")
                 .issuedAt(now)
                 .expiresAt(now.plus(15, ChronoUnit.MINUTES))
                 .subject(user.getUsername())
-                .claim("scope", List.of("VERIFY"))
+                .claim("scope", claim)
                 .notBefore(Instant.ofEpochSecond(now.getEpochSecond() + 60))
                 .build();
         JwsHeader header = JwsHeader.with(SignatureAlgorithm.RS256).build();
@@ -65,6 +66,11 @@ public class TokenService {
     public String extractClaim(String claim, String token) {
         Jwt jwt = jwtDecoder.decode(token);
         return jwt.getClaim(claim);
+    }
+
+    public List<String> extractScope(String token){
+        Jwt jwt = jwtDecoder.decode(token);
+        return jwt.getClaim("scope");
     }
 
     public String validateTokenBearer(String token) {

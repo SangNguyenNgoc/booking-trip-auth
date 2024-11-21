@@ -18,6 +18,8 @@ public interface UserRepository extends JpaRepository<User, String> {
 
     Optional<User>findByProfileIdAndVerifyFalse(String userId);
 
+    Optional<User>findByProfileId(String userId);
+
     Optional<User> findByUsernameAndProvider(String username, Provider provider);
 
     @Transactional
