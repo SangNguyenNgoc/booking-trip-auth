@@ -2,10 +2,7 @@ package org.example.authserver.services;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.example.authserver.dtos.AccountCreateRequest;
-import org.example.authserver.dtos.AccountCreatedError;
-import org.example.authserver.dtos.AccountNotified;
-import org.example.authserver.dtos.AccountVerified;
+import org.example.authserver.dtos.*;
 import org.example.authserver.entities.CustomOAuth2User;
 import org.example.authserver.entities.Provider;
 import org.example.authserver.entities.User;
@@ -15,7 +12,7 @@ import org.example.authserver.exception.UserNotFoundException;
 import org.example.authserver.interfaces.RoleRepository;
 import org.example.authserver.interfaces.UserMapper;
 import org.example.authserver.interfaces.UserRepository;
-import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -32,6 +29,9 @@ public interface UserService {
     void verify(String token);
     CustomOAuth2User processOauth2User(OAuth2User oAuth2User);
     void updateProvider(Provider provider, String id);
+    String requireForgotPassword(String email);
+    ForgotPassword verifyForgotPassword(String token);
+    String forgotPassword(FormForgotPassword forgotPassword);
 }
 @Service
 @RequiredArgsConstructor
@@ -45,6 +45,11 @@ class UserServiceImpl implements UserService{
     private final KafkaTemplate<String, Object> kafkaTemplate;
     private final TokenService tokenService;
     private final RedisService<AccountNotified> redisTemplate;
+
+    @Value("${url.home-page-url")
+    private String homeUri;
+    @Value("${url.forgot-password-url}")
+    private String forgotPasswordUri;
 
     @Override
     @Transactional
@@ -67,7 +72,7 @@ class UserServiceImpl implements UserService{
             var accountVerified = AccountVerified.builder()
                     .email(accountCreateRequest.getUsername())
                     .fullName(accountCreateRequest.getFullName())
-                    .verifyToken(tokenService.generateVerifyToken(user))
+                    .verifyToken(tokenService.generateVerifyToken(user, List.of("VERIFY")))
                     .build();
 
             kafkaTemplate.send("VerifyAccount", accountVerified);
@@ -88,6 +93,10 @@ class UserServiceImpl implements UserService{
             throw new TokenExpiredException("Url has expired.", List.of("Token has expired"));
         }
         String userName = tokenService.extractSubject(token);
+        var scopes = tokenService.extractScope(token);
+        if(!scopes.contains("VERIFY") || scopes.size() != 1){
+            throw new TokenExpiredException("Scope invalid", List.of("Scope invalid"));
+        }
         User user = userRepository.findByProfileIdAndVerifyFalse(userName)
                 .orElseThrow(() -> new UserNotFoundException("User not found", List.of("User not found or already verified.")));
         user.setVerify(true);
@@ -160,5 +169,54 @@ class UserServiceImpl implements UserService{
         user.setProvider(provider);
         user.setVerify(true);
     }
+
+    @Override
+    public String requireForgotPassword(String email){
+        var user = userRepository.findByUsername(email)
+                .orElseThrow(() -> new UserNotFoundException("Not found", List.of("Not found user with email" + email)));
+        var forgotPassword = ForgotPassword.builder()
+                .email(email)
+                .profileId(user.getProfileId())
+                .verify(forgotPasswordUri + "?t=" + tokenService.generateVerifyToken(user,List.of("REQUIRE_FORGOT_PASSWORD")))
+                .build();
+        kafkaTemplate.send("ForgotPassword", forgotPassword);
+        return "success";
+    }
+
+    public ForgotPassword verifyForgotPassword(String token){
+        if (tokenService.isTokenExpired(token)) {
+            throw new TokenExpiredException("Url has expired.", List.of("Token has expired"));
+        }
+        String userName = tokenService.extractSubject(token);
+        var scopes = tokenService.extractScope(token);
+        if(!scopes.contains("REQUIRE_FORGOT_PASSWORD") || scopes.size() != 1){
+            throw new TokenExpiredException("Scope invalid", List.of("Scope invalid"));
+        }
+        var user = userRepository.findByProfileId(userName)
+                .orElseThrow(() -> new UserNotFoundException("NOT FOUND", List.of("User not found")));
+        return ForgotPassword.builder()
+                .email(user.getEmail())
+                .profileId(user.getProfileId())
+                .verify(tokenService.generateVerifyToken(user,List.of("FORGOT_PASSWORD")))
+                .build();
+    }
+
+    @Transactional
+    public String forgotPassword(FormForgotPassword forgotPassword){
+        if (tokenService.isTokenExpired(forgotPassword.getVerify())) {
+            throw new TokenExpiredException("Url has expired.", List.of("Token has expired"));
+        }
+        String userName = tokenService.extractSubject(forgotPassword.getVerify());
+        var scopes = tokenService.extractScope(forgotPassword.getVerify());
+        if(!scopes.contains("FORGOT_PASSWORD") || scopes.size() != 1){
+            throw new TokenExpiredException("Scope invalid", List.of("Scope invalid"));
+        }
+        var user = userRepository.findByProfileId(userName)
+                .orElseThrow(() -> new UserNotFoundException("NOT FOUND", List.of("User not found")));
+        user.setPassword(passwordEncoder.encode(forgotPassword.getPassword()));
+        return homeUri;
+    }
+
+
 }
 
