@@ -108,6 +108,7 @@ url:
   verify-url: /auth/verify
   register-page-url: ${SSL}://${FE_DOMAIN}/dang-ky #fe's url
   home-page-url: ${SSL}://${FE_DOMAIN}
+  forgot-password-url: ${SSL}://${AUTH_DOMAIN}/auth/forgot-password
 
   confirm-google-page: /auth/confirm-google
   confirm-google-handle: /auth/confirm-google-handler
