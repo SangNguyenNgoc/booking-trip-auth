@@ -73,6 +73,8 @@ client:
     - http://localhost:3000/api/auth
     - http://localhost:3000/api/auth/callback/client
     - ${SSL}://${FE_DOMAIN}/api/auth/callback/client
+    - http://localhost:3000/api/auth/callback/admin
+    - ${SSL}://${FE_DOMAIN}/api/auth/callback/admin
   settings:
     require-authorization-consent: false
     require-proof-key: true
